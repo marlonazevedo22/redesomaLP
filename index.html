@@ -37,6 +37,7 @@
             'soma-dark': '#008E83',
             'soma-header': '#1e3a5f',
             ifood: '#EA1D2C',
+            whatsapp: '#25D366',
           }
         }
       }
@@ -64,6 +65,10 @@
       { "@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday"], "opens": "07:00", "closes": "22:00" },
       { "@type": "OpeningHoursSpecification", "dayOfWeek": "Saturday", "opens": "08:00", "closes": "21:00" },
       { "@type": "OpeningHoursSpecification", "dayOfWeek": "Sunday", "opens": "08:00", "closes": "18:00" }
+    ],
+    "sameAs": [
+      "https://www.instagram.com/redesoma.santacruz",
+      "https://www.facebook.com/profile.php?id=61579594063201"
     ]
   }
   </script>
@@ -76,9 +81,6 @@
   <style>
     html { scroll-behavior: smooth; }
     .modal-backdrop { background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); }
-    /* Previne CLS (Layout Shift) nas imagens */
-    .aspect-ratio-box { position: relative; width: 100%; padding-bottom: 100%; /* Quadrado */ }
-    .aspect-ratio-box img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
   </style>
 </head>
 
@@ -121,6 +123,20 @@
     <section class="px-5 mt-4 flex flex-col gap-3 w-full">
 
       <a
+        id="btn-whatsapp-list"
+        href="https://wa.me/5532998066244?text=Olá,%20vi%20o%20anúncio%20do%20cupom%20de%20entrega%20grátis%20e%20gostaria%20de%20resgatar!"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="flex items-center gap-4 bg-white hover:bg-green-50 border-2 border-whatsapp rounded-xl px-4 py-4 shadow-md hover:shadow-lg transition-all duration-200 group"
+      >
+        <div class="w-10 h-10 flex items-center justify-center bg-whatsapp rounded-lg text-white text-xl shadow-sm group-hover:scale-110 transition-transform">
+          <i class="fa-brands fa-whatsapp"></i>
+        </div>
+        <span class="flex-1 font-bold text-gray-700 text-lg">Pedir no WhatsApp</span>
+        <i class="fa-solid fa-chevron-right text-gray-300"></i>
+      </a>
+
+      <a
         id="btn-ifood"
         href="https://www.ifood.com.br/delivery/juiz-de-fora-mg/rede-soma-drogarias---santa-cruz-santa-cruz/ba010083-b7bc-4d28-af45-6bb93a56bc55"
         target="_blank"
@@ -145,6 +161,20 @@
           <i class="fa-brands fa-instagram"></i>
         </div>
         <span class="flex-1 font-bold text-gray-700 text-lg">Siga no Instagram</span>
+        <i class="fa-solid fa-chevron-right text-gray-300"></i>
+      </a>
+
+      <a
+        id="btn-facebook"
+        href="https://www.facebook.com/profile.php?id=61579594063201"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="flex items-center gap-4 bg-white hover:bg-gray-50 border border-gray-200 rounded-xl px-4 py-4 shadow-sm hover:shadow-md transition-all duration-200 group"
+      >
+        <div class="w-10 h-10 flex items-center justify-center bg-blue-600 rounded-lg text-white text-lg shadow-sm group-hover:scale-110 transition-transform">
+          <i class="fa-brands fa-facebook-f"></i>
+        </div>
+        <span class="flex-1 font-bold text-gray-700 text-lg">Curta no Facebook</span>
         <i class="fa-solid fa-chevron-right text-gray-300"></i>
       </a>
 
@@ -220,7 +250,7 @@
   </div>
 
   <script>
-    // 1. Lógica Avançada de Horário (Aberto/Fechado)
+    // 1. Lógica Avançada de Horário
     function updateStatus() {
       const badge = document.getElementById('status-badge');
       const now = new Date();
@@ -233,19 +263,11 @@
       const min = br.getMinutes();
       const time = hour + min / 60;
 
-      // Configuração de Horários (Santa Cruz)
-      // Seg-Sex: 07:00 - 22:00
-      // Sab: 08:00 - 21:00
-      // Dom: 08:00 - 18:00
+      // Seg-Sex: 07:00 - 22:00 | Sab: 08:00 - 21:00 | Dom: 08:00 - 18:00
       let isOpen = false;
-
-      if (day >= 1 && day <= 5) { // Seg a Sex
-        isOpen = time >= 7 && time < 22;
-      } else if (day === 6) { // Sab
-        isOpen = time >= 8 && time < 21;
-      } else { // Dom
-        isOpen = time >= 8 && time < 18;
-      }
+      if (day >= 1 && day <= 5) isOpen = time >= 7 && time < 22;
+      else if (day === 6) isOpen = time >= 8 && time < 21;
+      else isOpen = time >= 8 && time < 18;
 
       if (isOpen) {
         badge.textContent = '🟢 Aberto Agora';
@@ -256,22 +278,19 @@
       }
     }
 
-    // 2. UTM Tracking (O Segredo do Marketing)
-    // Pega ?utm_source=facebook e coloca na msg do WhatsApp
+    // 2. UTM Tracking (WhatsApp)
     function updateWhatsAppLinks() {
       const urlParams = new URLSearchParams(window.location.search);
-      const source = urlParams.get('utm_source'); // ex: facebook, google
-      const campaign = urlParams.get('utm_campaign'); // ex: delivery_gratis
+      const source = urlParams.get('utm_source');
+      const campaign = urlParams.get('utm_campaign');
 
       if (source || campaign) {
         const links = document.querySelectorAll('a[href^="https://wa.me"]');
         links.forEach(link => {
           let currentHref = link.getAttribute('href');
-          // Adiciona info de rastreio no final da mensagem
           let trackingText = ` (Origem: ${source || 'anuncio'}`;
           if (campaign) trackingText += ` - ${campaign}`;
           trackingText += `)`;
-          
           link.setAttribute('href', currentHref + encodeURIComponent(trackingText));
         });
       }
@@ -283,7 +302,6 @@
 
     function openModal() {
       modal.classList.remove('hidden');
-      // Pequeno delay para permitir a transição CSS
       setTimeout(() => {
         modal.classList.remove('opacity-0');
         content.classList.remove('scale-95');
@@ -297,19 +315,16 @@
       content.classList.add('scale-95');
       setTimeout(() => {
         modal.classList.add('hidden');
-      }, 300); // Espera a animação terminar
+      }, 300);
     }
 
-    // Fecha ao clicar fora
     modal.addEventListener('click', (e) => {
       if (e.target === modal) closeModal();
     });
 
-    // Inicialização
     updateStatus();
-    updateWhatsAppLinks(); // Roda o tracking
-    setInterval(updateStatus, 60000); // Atualiza status a cada minuto
-
+    updateWhatsAppLinks();
+    setInterval(updateStatus, 60000);
   </script>
 </body>
 </html>
